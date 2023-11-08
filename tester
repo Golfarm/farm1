@@ -4,6 +4,10 @@ local MAINGUI = Instance.new("Frame")
 local GUI = Instance.new("TextLabel")
 local Bloodfruit = Instance.new("TextButton")
 local Berry = Instance.new("TextButton")
+local Lemon = Instance.new("TextButton")
+local Bluefruit = Instance.new("TextButton")
+local Strawberry = Instance.new("TextButton")
+local PricklyPear = Instance.new("TextButton")
 
 -- Properties:
 ScreenGui.Parent = game.CoreGui
@@ -33,6 +37,10 @@ GUI.TextStrokeColor3 = Color3.fromRGB(110, 170, 13)
 
 local estaBloodfruitActivado = false
 local estaBerryActivado = false
+local estaLemonActivado = false
+local estaBluefruitActivado = false
+local estaStrawberryActivado = false
+local estaPricklyPearActivado = false
 
 local function realizarAccion(accion, nombre)
     local Players = game:GetService("Players")
@@ -80,6 +88,22 @@ local function realizarBerryAccion()
     return estaBerryActivado
 end
 
+local function realizarLemonAccion()
+    return estaLemonActivado
+end
+
+local function realizarBluefruitAccion()
+    return estaBluefruitActivado
+end
+
+local function realizarStrawberryAccion()
+    return estaStrawberryActivado
+end
+
+local function realizarPricklyPearAccion()
+    return estaPricklyPearActivado
+end
+
 Bloodfruit.Name = "Bloodfruit"
 Bloodfruit.Parent = MAINGUI
 Bloodfruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
@@ -110,7 +134,7 @@ Berry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
 Berry.BackgroundTransparency = 0.450
 Berry.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Berry.BorderSizePixel = 0
-Berry.Position = UDim2.new(0.56410259, 0, 0.470232993, 0)
+Berry.Position = UDim2.new(0.545299351, 0, 0.470232993, 0)
 Berry.Size = UDim2.new(0, 101, 0, 37)
 Berry.Font = Enum.Font.SourceSans
 Berry.Text = "Berry"
@@ -126,4 +150,100 @@ Berry.MouseButton1Down:Connect(function()
     end
 
     realizarAccion(realizarBerryAccion, "Berry")
+end)
+
+Lemon.Name = "Lemon"
+Lemon.Parent = MAINGUI
+Lemon.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+Lemon.BackgroundTransparency = 0.450
+Lemon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Lemon.BorderSizePixel = 0
+Lemon.Position = UDim2.new(0, 0, 0.748, 0)
+Lemon.Size = UDim2.new(0, 101, 0, 37)
+Lemon.Font = Enum.Font.SourceSans
+Lemon.Text = "Lemon"
+Lemon.TextColor3 = Color3.fromRGB(0, 0, 0)
+Lemon.TextSize = 14.000
+Lemon.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
+Lemon.MouseButton1Down:Connect(function()
+    estaLemonActivado = not estaLemonActivado
+    if estaLemonActivado then
+        Lemon.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        Lemon.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    end
+
+    realizarAccion(realizarLemonAccion, "Lemon")
+end)
+
+Bluefruit.Name = "Bluefruit"
+Bluefruit.Parent = MAINGUI
+Bluefruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+Bluefruit.BackgroundTransparency = 0.450
+Bluefruit.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Bluefruit.BorderSizePixel = 0
+Bluefruit.Position = UDim2.new(0.545299351, 0, 0.748, 0)
+Bluefruit.Size = UDim2.new(0, 101, 0, 37)
+Bluefruit.Font = Enum.Font.SourceSans
+Bluefruit.Text = "Bluefruit"
+Bluefruit.TextColor3 = Color3.fromRGB(0, 0, 0)
+Bluefruit.TextSize = 14.000
+Bluefruit.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
+Bluefruit.MouseButton1Down:Connect(function()
+    estaBluefruitActivado = not estaBluefruitActivado
+    if estaBluefruitActivado then
+        Bluefruit.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        Bluefruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    end
+
+    realizarAccion(realizarBluefruitAccion, "Bluefruit")
+end)
+
+Strawberry.Name = "Strawberry"
+Strawberry.Parent = MAINGUI
+Strawberry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+Strawberry.BackgroundTransparency = 0.450
+Strawberry.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Strawberry.BorderSizePixel = 0
+Strawberry.Position = UDim2.new(0, 0, 0.936, 0)
+Strawberry.Size = UDim2.new(0, 101, 0, 37)
+Strawberry.Font = Enum.Font.SourceSans
+Strawberry.Text = "Strawberry"
+Strawberry.TextColor3 = Color3.fromRGB(0, 0, 0)
+Strawberry.TextSize = 14.000
+Strawberry.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
+Strawberry.MouseButton1Down:Connect(function()
+    estaStrawberryActivado = not estaStrawberryActivado
+    if estaStrawberryActivado then
+        Strawberry.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        Strawberry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    end
+
+    realizarAccion(realizarStrawberryAccion, "Strawberry")
+end)
+
+PricklyPear.Name = "PricklyPear"
+PricklyPear.Parent = MAINGUI
+PricklyPear.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+PricklyPear.BackgroundTransparency = 0.450
+PricklyPear.BorderColor3 = Color3.fromRGB(0, 0, 0)
+PricklyPear.BorderSizePixel = 0
+PricklyPear.Position = UDim2.new(0.545299351, 0, 0.936, 0)
+PricklyPear.Size = UDim2.new(0, 101, 0, 37)
+PricklyPear.Font = Enum.Font.SourceSans
+PricklyPear.Text = "Prickly Pear"
+PricklyPear.TextColor3 = Color3.fromRGB(0, 0, 0)
+PricklyPear.TextSize = 14.000
+PricklyPear.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
+PricklyPear.MouseButton1Down:Connect(function()
+    estaPricklyPearActivado = not estaPricklyPearActivado
+    if estaPricklyPearActivado then
+        PricklyPear.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        PricklyPear.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    end
+
+    realizarAccion(realizarPricklyPearAccion, "Prickly Pear")
 end)
