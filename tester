@@ -8,6 +8,7 @@ local Lemon = Instance.new("TextButton")
 local Bluefruit = Instance.new("TextButton")
 local Strawberry = Instance.new("TextButton")
 local PricklyPear = Instance.new("TextButton")
+local CloseButton = Instance.new("TextButton")
 
 -- Properties:
 ScreenGui.Parent = game.CoreGui
@@ -42,6 +43,9 @@ local estaBluefruitActivado = false
 local estaStrawberryActivado = false
 local estaPricklyPearActivado = false
 
+local intervaloDeInteraccion = 0
+local distanciaMaxima = 11 -- Ajusta el área de detección
+
 local function realizarAccion(accion, nombre)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -52,8 +56,6 @@ local function realizarAccion(accion, nombre)
 
     local deployablesFolder = workspace:WaitForChild("Deployables")
     local plantBoxName = "Plant Box"
-    local distanciaMaxima = 10
-    local intervaloDeInteraccion = 0
 
     while accion() do
         local character = player.Character or player.CharacterAdded:Wait()
@@ -246,4 +248,21 @@ PricklyPear.MouseButton1Down:Connect(function()
     end
 
     realizarAccion(realizarPricklyPearAccion, "Prickly Pear")
+end)
+
+CloseButton.Parent = MAINGUI
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+CloseButton.BackgroundTransparency = 0.450
+CloseButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CloseButton.BorderSizePixel = 0
+CloseButton.Position = UDim2.new(1, -25, 0, 0)  -- Colocar el botón en la esquina superior derecha
+CloseButton.Size = UDim2.new(0, 25, 0, 25)  -- Tamaño del botón "x"
+CloseButton.Font = Enum.Font.SourceSans
+CloseButton.Text = "x"
+CloseButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+CloseButton.TextSize = 14.000
+CloseButton.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
+
+CloseButton.MouseButton1Down:Connect(function()
+    MAINGUI:Destroy()
 end)
