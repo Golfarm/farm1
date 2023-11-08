@@ -1,0 +1,110 @@
+-- Instances:
+local ScreenGui = Instance.new("ScreenGui")
+local MAINGUI = Instance.new("Frame")
+local GUI = Instance.new("TextLabel")
+local Bloodfruit = Instance.new("TextButton")
+local Berry = Instance.new("TextButton")
+
+-- Properties:
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+MAINGUI.Name = "MAINGUI"
+MAINGUI.Parent = ScreenGui
+MAINGUI.BackgroundColor3 = Color3.fromRGB(12, 16, 255)
+MAINGUI.BackgroundTransparency = 0.650
+MAINGUI.BorderColor3 = Color3.fromRGB(7, 32, 255)
+MAINGUI.BorderSizePixel = 0
+MAINGUI.Position = UDim2.new(-0.000280275708, 0, 0.633550286, 0)
+MAINGUI.Size = UDim2.new(0, 234, 0, 111)
+
+GUI.Name = "GUI"
+GUI.Parent = MAINGUI
+GUI.BackgroundColor3 = Color3.fromRGB(255, 11, 35)
+GUI.BorderColor3 = Color3.fromRGB(0, 0, 0)
+GUI.BorderSizePixel = 0
+GUI.Position = UDim2.new(0.00161697518, 0, -0.0014862885, 0)
+GUI.Size = UDim2.new(0, 233, 0, 35)
+GUI.Font = Enum.Font.SourceSans
+GUI.Text = "Lordsbogs"
+GUI.TextColor3 = Color3.fromRGB(0, 0, 0)
+GUI.TextSize = 20.000
+GUI.TextStrokeColor3 = Color3.fromRGB(110, 170, 13)
+
+local estaBloodfruitActivado = false
+local estaBerryActivado = false
+
+local function realizarAccion(accion, nombre)
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+    local player = Players.LocalPlayer
+    local events = ReplicatedStorage:WaitForChild("Events")
+    local interactStructureEvent = events:WaitForChild("InteractStructure")
+
+    local deployablesFolder = workspace:WaitForChild("Deployables")
+    local plantBoxName = "Plant Box"
+    local distanciaMaxima = 14
+    local intervaloDeInteraccion = 0
+
+    while accion() do
+        local character = player.Character or player.CharacterAdded:Wait()
+        local playerPosition = character.HumanoidRootPart.Position
+
+        for _, plantBox in pairs(deployablesFolder:GetChildren()) do
+            if plantBox:IsA("Model") and plantBox.Name == plantBoxName then
+                local plantBoxPosition = plantBox.PrimaryPart.Position
+                local distancia = (playerPosition - plantBoxPosition).Magnitude
+
+                if distancia <= distanciaMaxima then
+                    local args = {
+                        [1] = plantBox,
+                        [2] = nombre
+                    }
+
+                    interactStructureEvent:FireServer(unpack(args))
+                    wait(intervaloDeInteraccion)
+                end
+            end
+        end
+
+        wait(0)
+    end
+end
+
+local function realizarBloodfruitAccion()
+    return estaBloodfruitActivado
+end
+
+local function realizarBerryAccion()
+    return estaBerryActivado
+end
+
+Bloodfruit.Name = "Bloodfruit"
+Bloodfruit.Parent = MAINGUI
+Bloodfruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+Bloodfruit.BackgroundTransparency = 0.450
+Bloodfruit.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Bloodfruit.BorderSizePixel = 0
+Bloodfruit.Position = UDim2.new(0, 0, 0.470232993, 0)
+Bloodfruit.Size = UDim2.new(0, 101, 0, 37)
+Bloodfruit.Font = Enum.Font.SourceSans
+Bloodfruit.Text = "Bloodfruit"
+Bloodfruit.TextColor3 = Color3.fromRGB(0, 0, 0)
+Bloodfruit.TextSize = 14.000
+Bloodfruit.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
+Bloodfruit.MouseButton1Down:Connect(function()
+    estaBloodfruitActivado = not estaBloodfruitActivado
+    if estaBloodfruitActivado then
+        Bloodfruit.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        Bloodfruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    end
+
+    realizarAccion(realizarBloodfruitAccion, "Bloodfruit")
+end)
+
+Berry.Name = "Berry"
+Berry.Parent = MAINGUI
+Berry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+Berry.BackgroundTransparency = 0.
