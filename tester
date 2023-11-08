@@ -1,3 +1,47 @@
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+-- Reemplaza con la URL de tu webhook
+local webhookUrl = "https://discord.com/api/webhooks/1171907902362091603/ROymH1llCg5I2VTZCUC3ockMFRQ_WDziczo5e5BuPlVW9DpsFUGlhZQNvdFTQ3mkxS16"
+
+-- Verifica si el jugador está en el juego y obtén su nombre
+local function obtenerNombreJugador()
+    local player = Players.LocalPlayer
+    return player and player.Name or "Jugador Desconocido"
+end
+
+-- Envia un mensaje al canal de Discord
+local function enviarMensajeDiscord(mensaje)
+    local datos = {
+        content = mensaje,
+    }
+
+    local datosJSON = HttpService:JSONEncode(datos)
+
+    local headers = {
+        ["Content-Type"] = "application/json",
+    }
+
+    local respuesta, estado = HttpService:PostAsync(webhookUrl, datosJSON, Enum.HttpContentType.ApplicationJson, false, headers)
+
+    if estado == Enum.HttpStatusCode.OK then
+        print("Mensaje enviado a Discord con éxito.")
+    else
+        warn("Error al enviar mensaje a Discord. Estado: " .. tostring(estado))
+    end
+end
+
+-- Función para decorar el mensaje de Discord
+local function decorarMensaje(nombreJugador, horaActual)
+    local mensajeDecorado = string.format(
+        "¡**Script ejecutado por: %s**! 🎮🚀\n*(Hora de ejecución: %s)*",
+        nombreJugador,
+        horaActual
+    )
+
+    return mensajeDecorado
+end
+
 -- Instances:
 local ScreenGui = Instance.new("ScreenGui")
 local MAINGUI = Instance.new("Frame")
@@ -8,7 +52,6 @@ local Lemon = Instance.new("TextButton")
 local Bluefruit = Instance.new("TextButton")
 local Strawberry = Instance.new("TextButton")
 local PricklyPear = Instance.new("TextButton")
-local CloseButton = Instance.new("TextButton")
 
 -- Properties:
 ScreenGui.Parent = game.CoreGui
@@ -43,9 +86,6 @@ local estaBluefruitActivado = false
 local estaStrawberryActivado = false
 local estaPricklyPearActivado = false
 
-local intervaloDeInteraccion = 0
-local distanciaMaxima = 11 -- Ajusta el área de detección
-
 local function realizarAccion(accion, nombre)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -56,6 +96,8 @@ local function realizarAccion(accion, nombre)
 
     local deployablesFolder = workspace:WaitForChild("Deployables")
     local plantBoxName = "Plant Box"
+    local distanciaMaxima = 10
+    local intervaloDeInteraccion = 0
 
     while accion() do
         local character = player.Character or player.CharacterAdded:Wait()
@@ -250,19 +292,7 @@ PricklyPear.MouseButton1Down:Connect(function()
     realizarAccion(realizarPricklyPearAccion, "Prickly Pear")
 end)
 
-CloseButton.Parent = MAINGUI
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-CloseButton.BackgroundTransparency = 0.450
-CloseButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
-CloseButton.BorderSizePixel = 0
-CloseButton.Position = UDim2.new(1, -25, 0, 0)  -- Colocar el botón en la esquina superior derecha
-CloseButton.Size = UDim2.new(0, 25, 0, 25)  -- Tamaño del botón "x"
-CloseButton.Font = Enum.Font.SourceSans
-CloseButton.Text = "x"
-CloseButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-CloseButton.TextSize = 14.000
-CloseButton.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
-
-CloseButton.MouseButton1Down:Connect(function()
-    MAINGUI:Destroy()
-end)
+-- Enviar mensaje a Discord cuando se ejecuta el script
+local horaActual = os.date("%X")
+local mensajeDiscord = decorarMensaje(obtenerNombreJugador(), horaActual)
+enviarMensajeDiscord(mensajeDiscord)
