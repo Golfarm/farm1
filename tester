@@ -52,8 +52,8 @@ local function realizarAccion(accion, nombre)
 
     local deployablesFolder = workspace:WaitForChild("Deployables")
     local plantBoxName = "Plant Box"
-    local distanciaMaxima = 13
-    local intervaloDeInteraccion = 0.1
+    local distanciaMaxima = 10
+    local intervaloDeInteraccion = 0
 
     while accion() do
         local character = player.Character or player.CharacterAdded:Wait()
