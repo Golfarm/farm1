@@ -107,4 +107,23 @@ end)
 Berry.Name = "Berry"
 Berry.Parent = MAINGUI
 Berry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-Berry.BackgroundTransparency = 0.
+Berry.BackgroundTransparency = 0.450
+Berry.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Berry.BorderSizePixel = 0
+Berry.Position = UDim2.new(0.56410259, 0, 0.470232993, 0)
+Berry.Size = UDim2.new(0, 101, 0, 37)
+Berry.Font = Enum.Font.SourceSans
+Berry.Text = "Berry"
+Berry.TextColor3 = Color3.fromRGB(0, 0, 0)
+Berry.TextSize = 14.000
+Berry.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
+Berry.MouseButton1Down:Connect(function()
+    estaBerryActivado = not estaBerryActivado
+    if estaBerryActivado then
+        Berry.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        Berry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    end
+
+    realizarAccion(realizarBerryAccion, "Berry")
+end)
