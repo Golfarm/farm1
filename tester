@@ -1,298 +1,354 @@
+-- Instances:
+local LordsBogs = Instance.new("ScreenGui")
+local MAINGUI = Instance.new("Frame")
+local Tittle = Instance.new("TextBox")
+local Bloodfruit = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+local Berry = Instance.new("TextButton")
+local UICorner_2 = Instance.new("UICorner")
+local Bluefruit = Instance.new("TextButton")
+local UICorner_3 = Instance.new("UICorner")
+local Lemon = Instance.new("TextButton")
+local UICorner_4 = Instance.new("UICorner")
+local Jelly = Instance.new("TextButton")
+local UICorner_5 = Instance.new("UICorner")
+local Pricklypear = Instance.new("TextButton")
+local UICorner_6 = Instance.new("UICorner")
+
+-- Added functionality:
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 -- Reemplaza con la URL de tu webhook
 local webhookUrl = "https://discord.com/api/webhooks/1171907902362091603/ROymH1llCg5I2VTZCUC3ockMFRQ_WDziczo5e5BuPlVW9DpsFUGlhZQNvdFTQ3mkxS16"
 
--- Verifica si el jugador está en el juego y obtén su nombre
-local function obtenerNombreJugador()
-    local player = Players.LocalPlayer
-    return player and player.Name or "Jugador Desconocido"
-end
+local player = Players.LocalPlayer
+local events = game:GetService("ReplicatedStorage"):WaitForChild("Events")
+local interactStructureEvent = events:WaitForChild("InteractStructure")
 
--- Envia un mensaje al canal de Discord
-local function enviarMensajeDiscord(mensaje)
-    local datos = {
-        content = mensaje,
-    }
+local deployablesFolder = workspace:WaitForChild("Deployables")
+local plantBoxName = "Plant Box"
+local distanciaMaxima = 10
+local intervaloDeInteraccion = 0
 
-    local datosJSON = HttpService:JSONEncode(datos)
+local activeFruits = {}
 
-    local headers = {
-        ["Content-Type"] = "application/json",
-    }
-
-    local respuesta, estado = HttpService:PostAsync(webhookUrl, datosJSON, Enum.HttpContentType.ApplicationJson, false, headers)
-
-    if estado == Enum.HttpStatusCode.OK then
-        print("Mensaje enviado a Discord con éxito.")
+local function toggleFruitActivation(fruitButton, fruitName)
+    if activeFruits[fruitName] then
+        -- Deactivate fruit
+        activeFruits[fruitName] = false
+        fruitButton.BackgroundColor3 = Color3.fromRGB(0, 85, 255)  -- Set the original color
     else
-        warn("Error al enviar mensaje a Discord. Estado: " .. tostring(estado))
-    end
-end
+        -- Activate fruit
+        activeFruits[fruitName] = true
+        fruitButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- Set the color when active
 
--- Función para decorar el mensaje de Discord
-local function decorarMensaje(nombreJugador, horaActual)
-    local mensajeDecorado = string.format(
-        "¡**Script ejecutado por: %s**! 🎮🚀\n*(Hora de ejecución: %s)*",
-        nombreJugador,
-        horaActual
-    )
+        while activeFruits[fruitName] do
+            local character = player.Character or player.CharacterAdded:Wait()
+            local playerPosition = character.HumanoidRootPart.Position
 
-    return mensajeDecorado
-end
+            for _, plantBox in pairs(deployablesFolder:GetChildren()) do
+                if plantBox:IsA("Model") and plantBox.Name == plantBoxName then
+                    local plantBoxPosition = plantBox.PrimaryPart.Position
+                    local distancia = (playerPosition - plantBoxPosition).Magnitude
 
--- Instances:
-local ScreenGui = Instance.new("ScreenGui")
-local MAINGUI = Instance.new("Frame")
-local GUI = Instance.new("TextLabel")
-local Bloodfruit = Instance.new("TextButton")
-local Berry = Instance.new("TextButton")
-local Lemon = Instance.new("TextButton")
-local Bluefruit = Instance.new("TextButton")
-local Strawberry = Instance.new("TextButton")
-local PricklyPear = Instance.new("TextButton")
+                    if distancia <= distanciaMaxima then
+                        local args = {
+                            [1] = plantBox,
+                            [2] = fruitName
+                        }
 
--- Properties:
-ScreenGui.Parent = game.CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-MAINGUI.Name = "MAINGUI"
-MAINGUI.Parent = ScreenGui
-MAINGUI.BackgroundColor3 = Color3.fromRGB(12, 16, 255)
-MAINGUI.BackgroundTransparency = 0.650
-MAINGUI.BorderColor3 = Color3.fromRGB(7, 32, 255)
-MAINGUI.BorderSizePixel = 0
-MAINGUI.Position = UDim2.new(-0.000280275708, 0, 0.633550286, 0)
-MAINGUI.Size = UDim2.new(0, 234, 0, 111)
-
-GUI.Name = "GUI"
-GUI.Parent = MAINGUI
-GUI.BackgroundColor3 = Color3.fromRGB(255, 11, 35)
-GUI.BorderColor3 = Color3.fromRGB(0, 0, 0)
-GUI.BorderSizePixel = 0
-GUI.Position = UDim2.new(0.00161697518, 0, -0.0014862885, 0)
-GUI.Size = UDim2.new(0, 233, 0, 35)
-GUI.Font = Enum.Font.SourceSans
-GUI.Text = "Lordsbogs"
-GUI.TextColor3 = Color3.fromRGB(0, 0, 0)
-GUI.TextSize = 20.000
-GUI.TextStrokeColor3 = Color3.fromRGB(110, 170, 13)
-
-local estaBloodfruitActivado = false
-local estaBerryActivado = false
-local estaLemonActivado = false
-local estaBluefruitActivado = false
-local estaStrawberryActivado = false
-local estaPricklyPearActivado = false
-
-local function realizarAccion(accion, nombre)
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-    local player = Players.LocalPlayer
-    local events = ReplicatedStorage:WaitForChild("Events")
-    local interactStructureEvent = events:WaitForChild("InteractStructure")
-
-    local deployablesFolder = workspace:WaitForChild("Deployables")
-    local plantBoxName = "Plant Box"
-    local distanciaMaxima = 10
-    local intervaloDeInteraccion = 0
-
-    while accion() do
-        local character = player.Character or player.CharacterAdded:Wait()
-        local playerPosition = character.HumanoidRootPart.Position
-
-        for _, plantBox in pairs(deployablesFolder:GetChildren()) do
-            if plantBox:IsA("Model") and plantBox.Name == plantBoxName then
-                local plantBoxPosition = plantBox.PrimaryPart.Position
-                local distancia = (playerPosition - plantBoxPosition).Magnitude
-
-                if distancia <= distanciaMaxima then
-                    local args = {
-                        [1] = plantBox,
-                        [2] = nombre
-                    }
-
-                    interactStructureEvent:FireServer(unpack(args))
-                    wait(intervaloDeInteraccion)
+                        interactStructureEvent:FireServer(unpack(args))
+                        wait(intervaloDeInteraccion)
+                    end
                 end
             end
-        end
 
-        wait(0)
+            wait(0)
+        end
     end
 end
 
-local function realizarBloodfruitAccion()
-    return estaBloodfruitActivado
-end
+-- GUI Setup:
 
-local function realizarBerryAccion()
-    return estaBerryActivado
-end
+LordsBogs.Name = "LordsBogs"
+LordsBogs.Parent = game.CoreGui
+LordsBogs.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local function realizarLemonAccion()
-    return estaLemonActivado
-end
+MAINGUI.Name = "MAINGUI"
+MAINGUI.Parent = LordsBogs
+MAINGUI.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MAINGUI.BackgroundTransparency = 0.500
+MAINGUI.BorderColor3 = Color3.fromRGB(255, 0, 0)
+MAINGUI.BorderSizePixel = 5
+MAINGUI.Position = UDim2.new(0.18211101, 0, 0.317751735, 0)
+MAINGUI.Size = UDim2.new(0.391581625, 0, 0.423620015, 0)
 
-local function realizarBluefruitAccion()
-    return estaBluefruitActivado
-end
+Tittle.Name = "Tittle"
+local DistanciaMaxima = Instance.new("TextBox")
+DistanciaMaxima.Name = "DistanciaMaxima"
+DistanciaMaxima.Parent = MAINGUI
+DistanciaMaxima.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+DistanciaMaxima.BorderColor3 = Color3.fromRGB(255, 0, 0)
+DistanciaMaxima.BorderSizePixel = 0
+DistanciaMaxima.Position = UDim2.new(0.0244299676, 0, 0.464646459, 0)
+DistanciaMaxima.Size = UDim2.new(0.293159604, 0, 0.151515156, 0)
+DistanciaMaxima.Font = Enum.Font.SourceSans
+DistanciaMaxima.Text = tostring(distanciaMaxima)  -- Mostrar el valor actual
+DistanciaMaxima.TextColor3 = Color3.fromRGB(255, 255, 255)
+DistanciaMaxima.TextScaled = true
+DistanciaMaxima.TextSize = 14.000
+DistanciaMaxima.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+DistanciaMaxima.TextStrokeTransparency = 0.000
+DistanciaMaxima.TextWrapped = true
 
-local function realizarStrawberryAccion()
-    return estaStrawberryActivado
-end
+-- Evento para cambiar la distancia máxima cuando el usuario pierde el enfoque en el cuadro de texto:
+DistanciaMaxima.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local nuevaDistanciaMaxima = tonumber(DistanciaMaxima.Text)
+        if nuevaDistanciaMaxima then
+            distanciaMaxima = nuevaDistanciaMaxima
+        else
+            warn("Por favor, ingresa un número válido para la distancia máxima.")
+            DistanciaMaxima.Text = tostring(distanciaMaxima)  -- Restablecer el valor anterior
+        end
+    end
+end)
+LordsBogs.Name = "LordsBogs"
+LordsBogs.Parent = game.CoreGui
+LordsBogs.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local function realizarPricklyPearAccion()
-    return estaPricklyPearActivado
-end
+MAINGUI.Name = "MAINGUI"
+MAINGUI.Parent = LordsBogs
+MAINGUI.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MAINGUI.BackgroundTransparency = 0.500
+MAINGUI.BorderColor3 = Color3.fromRGB(255, 0, 0)
+MAINGUI.BorderSizePixel = 5
+MAINGUI.Position = UDim2.new(0.18211101, 0, 0.317751735, 0)
+MAINGUI.Size = UDim2.new(0.391581625, 0, 0.423620015, 0)
 
+Tittle.Name = "Tittle"
+Tittle.Parent = MAINGUI
+Tittle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Tittle.BorderColor3 = Color3.fromRGB(255, 0, 0)
+Tittle.BorderSizePixel = 5
+Tittle.Position = UDim2.new(0.30130294, 0, -0.203030303, 0)
+Tittle.Size = UDim2.new(0.39739415, 0, 0.181818187, 0)
+Tittle.Font = Enum.Font.SourceSans
+Tittle.Text = ""
+Tittle.TextColor3 = Color3.fromRGB(255, 0, 0)
+Tittle.TextScaled = true
+Tittle.TextSize = 54.000
+Tittle.TextStrokeColor3 = Color3.fromRGB(85, 255, 255)
+Tittle.TextStrokeTransparency = 0.000
+Tittle.TextWrapped = true
+
+-- Bloodfruit button setup:
 Bloodfruit.Name = "Bloodfruit"
 Bloodfruit.Parent = MAINGUI
-Bloodfruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-Bloodfruit.BackgroundTransparency = 0.450
+Bloodfruit.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
 Bloodfruit.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Bloodfruit.BorderSizePixel = 0
-Bloodfruit.Position = UDim2.new(0, 0, 0.470232993, 0)
-Bloodfruit.Size = UDim2.new(0, 101, 0, 37)
+Bloodfruit.Position = UDim2.new(0.0244299676, 0, 0.0515151508, 0)
+Bloodfruit.Size = UDim2.new(0.293159604, 0, 0.151515156, 0)
 Bloodfruit.Font = Enum.Font.SourceSans
 Bloodfruit.Text = "Bloodfruit"
 Bloodfruit.TextColor3 = Color3.fromRGB(0, 0, 0)
+Bloodfruit.TextScaled = true
 Bloodfruit.TextSize = 14.000
-Bloodfruit.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
-Bloodfruit.MouseButton1Down:Connect(function()
-    estaBloodfruitActivado = not estaBloodfruitActivado
-    if estaBloodfruitActivado then
-        Bloodfruit.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    else
-        Bloodfruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    end
+Bloodfruit.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Bloodfruit.TextStrokeTransparency = 0.000
+Bloodfruit.TextWrapped = true
 
-    realizarAccion(realizarBloodfruitAccion, "Bloodfruit")
+UICorner.CornerRadius = UDim.new(0.400000006, 0)
+UICorner.Parent = Bloodfruit
+
+Bloodfruit.MouseButton1Click:Connect(function()
+    toggleFruitActivation(Bloodfruit, "Bloodfruit")
 end)
 
+-- Berry button setup:
 Berry.Name = "Berry"
 Berry.Parent = MAINGUI
-Berry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-Berry.BackgroundTransparency = 0.450
+Berry.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
 Berry.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Berry.BorderSizePixel = 0
-Berry.Position = UDim2.new(0.545299351, 0, 0.470232993, 0)
-Berry.Size = UDim2.new(0, 101, 0, 37)
+Berry.Position = UDim2.new(0.351791531, 0, 0.0515151508, 0)
+Berry.Size = UDim2.new(0.293159604, 0, 0.151515156, 0)
 Berry.Font = Enum.Font.SourceSans
 Berry.Text = "Berry"
 Berry.TextColor3 = Color3.fromRGB(0, 0, 0)
+Berry.TextScaled = true
 Berry.TextSize = 14.000
-Berry.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
-Berry.MouseButton1Down:Connect(function()
-    estaBerryActivado = not estaBerryActivado
-    if estaBerryActivado then
-        Berry.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    else
-        Berry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    end
+Berry.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Berry.TextStrokeTransparency = 0.000
+Berry.TextWrapped = true
 
-    realizarAccion(realizarBerryAccion, "Berry")
+UICorner_2.CornerRadius = UDim.new(0.400000006, 0)
+UICorner_2.Parent = Berry
+
+Berry.MouseButton1Click:Connect(function()
+    toggleFruitActivation(Berry, "Berry")
 end)
 
-Lemon.Name = "Lemon"
-Lemon.Parent = MAINGUI
-Lemon.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-Lemon.BackgroundTransparency = 0.450
-Lemon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Lemon.BorderSizePixel = 0
-Lemon.Position = UDim2.new(0, 0, 0.748, 0)
-Lemon.Size = UDim2.new(0, 101, 0, 37)
-Lemon.Font = Enum.Font.SourceSans
-Lemon.Text = "Lemon"
-Lemon.TextColor3 = Color3.fromRGB(0, 0, 0)
-Lemon.TextSize = 14.000
-Lemon.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
-Lemon.MouseButton1Down:Connect(function()
-    estaLemonActivado = not estaLemonActivado
-    if estaLemonActivado then
-        Lemon.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    else
-        Lemon.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    end
-
-    realizarAccion(realizarLemonAccion, "Lemon")
-end)
-
+-- Bluefruit button setup:
 Bluefruit.Name = "Bluefruit"
 Bluefruit.Parent = MAINGUI
-Bluefruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-Bluefruit.BackgroundTransparency = 0.450
+Bluefruit.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
 Bluefruit.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Bluefruit.BorderSizePixel = 0
-Bluefruit.Position = UDim2.new(0.545299351, 0, 0.748, 0)
-Bluefruit.Size = UDim2.new(0, 101, 0, 37)
+Bluefruit.Position = UDim2.new(0.677524447, 0, 0.0484848469, 0)
+Bluefruit.Size = UDim2.new(0.293159604, 0, 0.151515156, 0)
 Bluefruit.Font = Enum.Font.SourceSans
 Bluefruit.Text = "Bluefruit"
 Bluefruit.TextColor3 = Color3.fromRGB(0, 0, 0)
+Bluefruit.TextScaled = true
 Bluefruit.TextSize = 14.000
-Bluefruit.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
-Bluefruit.MouseButton1Down:Connect(function()
-    estaBluefruitActivado = not estaBluefruitActivado
-    if estaBluefruitActivado then
-        Bluefruit.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    else
-        Bluefruit.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    end
+Bluefruit.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Bluefruit.TextStrokeTransparency = 0.000
+Bluefruit.TextWrapped = true
 
-    realizarAccion(realizarBluefruitAccion, "Bluefruit")
+UICorner_3.CornerRadius = UDim.new(0.400000006, 0)
+UICorner_3.Parent = Bluefruit
+
+Bluefruit.MouseButton1Click:Connect(function()
+    toggleFruitActivation(Bluefruit, "Bluefruit")
 end)
 
-Strawberry.Name = "Strawberry"
-Strawberry.Parent = MAINGUI
-Strawberry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-Strawberry.BackgroundTransparency = 0.450
-Strawberry.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Strawberry.BorderSizePixel = 0
-Strawberry.Position = UDim2.new(0, 0, 0.936, 0)
-Strawberry.Size = UDim2.new(0, 101, 0, 37)
-Strawberry.Font = Enum.Font.SourceSans
-Strawberry.Text = "Strawberry"
-Strawberry.TextColor3 = Color3.fromRGB(0, 0, 0)
-Strawberry.TextSize = 14.000
-Strawberry.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
-Strawberry.MouseButton1Down:Connect(function()
-    estaStrawberryActivado = not estaStrawberryActivado
-    if estaStrawberryActivado then
-        Strawberry.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    else
-        Strawberry.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    end
+-- Lemon button setup:
+Lemon.Name = "Lemon"
+Lemon.Parent = MAINGUI
+Lemon.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
+Lemon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Lemon.BorderSizePixel = 0
+Lemon.Position = UDim2.new(0.026058631, 0, 0.25151515, 0)
+Lemon.Size = UDim2.new(0.293159604, 0, 0.151515156, 0)
+Lemon.Font = Enum.Font.SourceSans
+Lemon.Text = "Lemon"
+Lemon.TextColor3 = Color3.fromRGB(0, 0, 0)
+Lemon.TextScaled = true
+Lemon.TextSize = 14.000
+Lemon.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Lemon.TextStrokeTransparency = 0.000
+Lemon.TextWrapped = true
 
-    realizarAccion(realizarStrawberryAccion, "Strawberry")
+UICorner_4.CornerRadius = UDim.new(0.400000006, 0)
+UICorner_4.Parent = Lemon
+
+Lemon.MouseButton1Click:Connect(function()
+    toggleFruitActivation(Lemon, "Lemon")
 end)
 
-PricklyPear.Name = "PricklyPear"
-PricklyPear.Parent = MAINGUI
-PricklyPear.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-PricklyPear.BackgroundTransparency = 0.450
-PricklyPear.BorderColor3 = Color3.fromRGB(0, 0, 0)
-PricklyPear.BorderSizePixel = 0
-PricklyPear.Position = UDim2.new(0.545299351, 0, 0.936, 0)
-PricklyPear.Size = UDim2.new(0, 101, 0, 37)
-PricklyPear.Font = Enum.Font.SourceSans
-PricklyPear.Text = "Prickly Pear"
-PricklyPear.TextColor3 = Color3.fromRGB(0, 0, 0)
-PricklyPear.TextSize = 14.000
-PricklyPear.TextStrokeColor3 = Color3.fromRGB(170, 5, 35)
-PricklyPear.MouseButton1Down:Connect(function()
-    estaPricklyPearActivado = not estaPricklyPearActivado
-    if estaPricklyPearActivado then
-        PricklyPear.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    else
-        PricklyPear.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    end
+-- Jelly button setup:
+Jelly.Name = "Jelly"
+Jelly.Parent = MAINGUI
+Jelly.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
+Jelly.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Jelly.BorderSizePixel = 0
+Jelly.Position = UDim2.new(0.353420198, 0, 0.25454545, 0)
+Jelly.Size = UDim2.new(0.293159604, 0, 0.151515156, 0)
+Jelly.Font = Enum.Font.SourceSans
+Jelly.Text = "Jelly"
+Jelly.TextColor3 = Color3.fromRGB(0, 0, 0)
+Jelly.TextScaled = true
+Jelly.TextSize = 14.000
+Jelly.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Jelly.TextStrokeTransparency = 0.000
+Jelly.TextWrapped = true
 
-    realizarAccion(realizarPricklyPearAccion, "Prickly Pear")
+UICorner_5.CornerRadius = UDim.new(0.400000006, 0)
+UICorner_5.Parent = Jelly
+
+Jelly.MouseButton1Click:Connect(function()
+    toggleFruitActivation(Jelly, "Jelly")
 end)
 
--- Enviar mensaje a Discord cuando se ejecuta el script
-local horaActual = os.date("%X")
-local mensajeDiscord = decorarMensaje(obtenerNombreJugador(), horaActual)
-enviarMensajeDiscord(mensajeDiscord)
+-- Prickly pear button setup:
+Pricklypear.Name = "Prickly pear"
+Pricklypear.Parent = MAINGUI
+Pricklypear.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
+Pricklypear.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Pricklypear.BorderSizePixel = 0
+Pricklypear.Position = UDim2.new(0.679153085, 0, 0.25454545, 0)
+Pricklypear.Size = UDim2.new(0.293159604, 0, 0.151515156, 0)
+Pricklypear.Font = Enum.Font.SourceSans
+Pricklypear.Text = "Prickly pear"
+Pricklypear.TextColor3 = Color3.fromRGB(0, 0, 0)
+Pricklypear.TextScaled = true
+Pricklypear.TextSize = 14.000
+Pricklypear.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Pricklypear.TextStrokeTransparency = 0.000
+Pricklypear.TextWrapped = true
+
+UICorner_6.CornerRadius = UDim.new(0.400000006, 0)
+UICorner_6.Parent = Pricklypear
+
+Pricklypear.MouseButton1Click:Connect(function()
+    toggleFruitActivation(Pricklypear, "Prickly pear")
+end)
+
+-- Minimize Button Setup:
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = MAINGUI
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+MinimizeButton.Position = UDim2.new(0, 0, 1, -30)  -- Ajusta la posición según sea necesario
+MinimizeButton.Size = UDim2.new(1, 0, 0, 30)
+MinimizeButton.Font = Enum.Font.SourceSans
+MinimizeButton.Text = "Minimize"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextScaled = true
+MinimizeButton.TextSize = 14.000
+MinimizeButton.TextWrapped = true
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    -- Toggle visibility of the GUI
+    MAINGUI.Visible = not MAINGUI.Visible
+end)
+
+-- Añade este bloque al final de tu script para enviar un mensaje a Discord:
+local horaActual = os.date("%Y-%m-%d %H:%M:%S")
+local mensaje = string.format("𝒮𝒸𝓇𝒾𝓉𝓅 𝐸𝒿𝑒𝒸𝓊𝓉𝒶𝒹𝑜 𝓅𝑜𝓇 😀 : %s 𝓕𝓮𝓬𝓱𝓪 𝓭𝓮 𝓔𝓳𝓮𝓬𝓾𝓬𝓲𝓸𝓷 %s", player.Name, horaActual)
+local datos = {
+    content = mensaje,
+}
+local datosJSON = HttpService:JSONEncode(datos)
+local headers = {
+    ["Content-Type"] = "application/json",
+}
+local respuesta, estado = HttpService:PostAsync(webhookUrl, datosJSON, Enum.HttpContentType.ApplicationJson, false, headers)
+
+if estado == Enum.HttpStatusCode.OK then
+    print("Mensaje enviado a Discord con éxito.")
+else
+    warn("Error al enviar mensaje a Discord. Estado: " .. tostring(estado))
+end
+
+while true do
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    local playerPosition = character.HumanoidRootPart.Position
+
+    for _, plantBox in pairs(deployablesFolder:GetChildren()) do
+        if plantBox:IsA("Model") and plantBox.Name == plantBoxName then
+            local plantBoxPosition = plantBox.PrimaryPart.Position
+            local distancia = (playerPosition - plantBoxPosition).Magnitude
+
+            if distancia <= distanciaMaxima then
+                for fruitName, active in pairs(activeFruits) do
+                    if active then
+                        local args = {
+                            [1] = plantBox,
+                            [2] = fruitName
+                        }
+
+                        interactStructureEvent:FireServer(unpack(args))
+                        wait(intervaloDeInteraccion)
+                    end
+                end
+            end
+        end
+    end
+
+    wait(0)
+end
